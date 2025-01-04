@@ -1,0 +1,1 @@
+# Dùng AI sai cách
