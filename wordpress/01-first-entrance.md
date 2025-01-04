@@ -55,4 +55,44 @@ if ( function_exists( 'error_reporting' ) ) {
 
 ### Load Config
 
+WordPress thực hiện kiểm tra 3 cases sau:
+1. Trường hợp `wp-config.php` có tồn tại trong root level của WordPress không.
+2. Trường hợp file `wp-config.php` có tồn tại nhưng file `wp-settings.php` không tồn tại.
+3. Nếu cả 2 trường hợp trên đều không match, tức là cả hai file `wp-config.php` và `wp-settings.php` đều không tồn tại.
 
+Giờ mình sẽ test thử mấy cái trường hợp trên để thử nghiệm.
+
+```php
+if ( file_exists( ABSPATH . 'pw-config.php' ) ) {
+  var_dump('config file and settings file exist');
+} elseif ( @file_exists( dirname( ABSPATH ) . '/pw-config.php' ) && ! @file_exists( dirname( ABSPATH ) . '/pw-settings.php' ) ) {
+  var_dump('config file exists but settings file doesn\'t.');
+} else {
+  var_dump('none exists');
+}
+```
+
+#### Trường hợp không có file nào cả
+
+Vì mình chỉ mới tạo file `pw-load.php`, vì vậy cả hai file config và settings đều không tồn tại. Như này thì khi bạn test, block `else` sẽ là block được execute.
+
+#### Tạo một file `pw-config.php`
+
+Giờ mình sẽ tạo một file `pw-config.php` rỗng và reload. Mặc dù mình expect nó sẽ rơi vào block `elseif`, tuy nhiên thì code lại rơi vào block `if`. Để biết nguyên do thì mình sẽ dump ra như sau:
+
+```php
+var_dump(ABSPATH . 'pw-config.php'); // => string(39) "D:\XAMPP\htdocs\power-cms/pw-config.php"
+var_dump(dirname(ABSPATH) . '/pw-config.php'); // => string(29) "D:\XAMPP\htdocs/pw-config.php"
+die;
+```
+
+Như vậy có thể thấy, block `elseif` là block dùng để kiểm tra trường hợp file config nằm ở ngoài thư mục wordpress của bạn, nhưng đồng thời cũng tránh việc thư mục hiện tại của bạn và thư mục cha của thư mục hiện tại đều là thư mục WordPress, theo như giải thích của WordPress trong docblock:
+
+```php
+The secondary check for wp-settings.php has the added benefit of avoiding cases
+where the current directory is a nested installation, e.g. / is WordPress(a) and /blog/ is WordPress(b).
+```
+
+Nghĩa là, bạn có thư mục `/path/to/html/` và một thư mục nằm dưới `html` là `/path/to/html/blog/`, và cả hai thư mục này đều có WordPress setup. Điều kiện check ở `elseif` block là: **nếu file `wp-config.php` có tồn tại ở thư mục cao hơn thư mục hiện tại 1 level, nhưng file `wp-settings.php` không tồn tại => thư mục cha của thư mục hiện tại không phải là thư mục wordpress**. Như vậy, vì mình vừa tạo một file config ở cùng level với file `pw-load.php` nên điều kiện `if` sẽ được thoả mãn, file `pw-config.php` sẽ được load.
+
+Tuy nhiên, theo đúng rule của WordPress thì mặc định, file config này sẽ không bao giờ tồn tại ở lần đầu được tải về và cài đặt mà thay vào đó, sẽ có một file tên `wp-config-sample.php` để người dùng có thể refer và tạo file config của riêng họ, vì vậy mình cũng sẽ rename file `pw-config.php` của mình thành `pw-config-sample.php`.
