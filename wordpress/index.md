@@ -13,4 +13,4 @@ Tổng hợp các research qua đó giúp tìm hiểu cách hoạt động của
 
 Vì các software này đã quá phổ biến và hướng dẫn cài đặt cũng nhiều trên mạng nên mình sẽ không nói lại.
 
-1. [WP First Entrance: Request tới file index.php](dinhhoangbaochan.github.io/wordpress/first-entrance).
+1. [WP First Entrance: Request tới file index.php](dinhhoangbaochan.github.io/wordpress/01-first-entrance).
